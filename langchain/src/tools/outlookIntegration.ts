@@ -1,5 +1,7 @@
 import { Tool, type ToolParams } from "./base.js";
 import fetch from 'node-fetch';
+import { output } from 'z';
+import { CallbackManagerForToolRun } from './types';
 
 
 export interface Email {
@@ -8,6 +10,8 @@ export interface Email {
   // Add other properties as needed
 }
 
+// ... [Other code and imports] ...
+
 interface SendEmailParams {
   to: string;
   subject: string;
@@ -15,124 +19,103 @@ interface SendEmailParams {
 }
 
 interface ReadEmailParams {
-  // Define parameters for reading emails if needed
+  // Add properties as needed for reading emails
+  
+  // Example: read emails from a specific sender
+  sender: string;
+
+  // Example: read emails with a specific subject
+  subject: string;
+
+  // Example: read emails received after a specific date
+  receivedAfter: Date;
+
+  // Example: read emails received before a specific date
+  receivedBefore: Date;
 }
 
-// ... other parameter types for different actions
+interface GetMailTipsParams {
+  emailAddresses: string[];  
+  mailTipTypes: string[];    
+}
 
+// ... [AuthenticationManager and EmailService classes] ...
 
+class EmailService {
+    // ... [Other methods and properties] ...
 
-/**
- * The OutlookIntegration class is a tool used to send and 
- * read emails. It extends the base Tool class.
- */
+    async sendEmail(): Promise<void> {
+      // Implement send email logic
+      // Use 'to', 'subject', 'content' to send email
+    }
+
+    async readEmails(): Promise<Email[]> {
+      // Implement read emails logic
+      // Use 'params' as needed to filter or fetch emails
+
+      // Return an empty array if there are no emails
+      return [];
+    }
+
+    async getMailTips(): Promise<any> {
+      // Implement get mail tips logic
+      // Use 'params.emailAddresses' and 'params.mailTipTypes' to get mail tips
+
+      // Return an empty array if there are no mail tips
+
+      // Example response:
+      // return [
+      //   {
+      //     emailAddress: 'user1@domain',
+      //     mailTips: [
+      //       {
+      //         mailTipType: 'AutomaticReplies',
+      //         message: 'Automatic reply message',
+      //       },
+      //       {
+      //         mailTipType: 'MailboxFullStatus',
+      //         message: 'Mailbox full message',
+      //       },
+      //     ],
+      //   },
+
+    }
+}
+
 export class OutlookIntegration extends Tool {
-  accessToken: string; // Store the OAuth2 access token
+    // ... [Constructor and other properties] ...
 
-  static lc_name() {
-    return "Outlook Integration";
-  }
-  name = "outlook-integration";
-  description = `Useful for sending and reading emails. The input to this tool should be a valid email address.`;
+      
+    emailService: EmailService; // Add emailService property
 
-  constructor(params: ToolParams, accessToken: string) {
-    super(params);
-    this.accessToken = accessToken; // Initialize with an OAuth2 access token
-    this.
-  }
+    constructor(params: ToolParams) {
+      super(params);
+      this.emailService = new EmailService(); // Initialize emailService
+    }
 
-  
 
-  async readEmails(): Promise<Email[]> {
-    try {
-      const response = await fetch("https://graph.microsoft.com/v1.0/me/mailFolders('Inbox')/messages?$select=sender,subject", {
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-        },
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
+    async _call<T>(arg: output<T>, runManager?: CallbackManagerForToolRun): Promise<string> {
+      try {
+        const { action, params } = arg;
+        switch (action) {
+          case 'sendEmail':
+            await this.emailService.sendEmail();
+            return 'Email sent successfully';
+          case 'readEmails':
+            const readEmailParams = params as ReadEmailParams;
+            const emails = await this.emailService.readEmails();
+            return `Read ${emails.length} emails`;
+          case 'getMailTips':
+            const getMailTipsParams = params as GetMailTipsParams;
+            const tips = await this.emailService.getMailTips();
+            return `Retrieved mail tips for ${getMailTipsParams.emailAddresses.length} addresses`;
+          default:
+            throw new Error(`Action ${action} is not supported`);
+        }
+      } catch (error) {
+        console.error(error);
+        return `Error: ${(error as Error).message}`;
       }
-
-      const data = await response.json();
-      return data.value; // Assuming 'value' contains the array of emails
-    } catch (error) {
-      console.error("Failed to read emails:", error);
-      throw error;
     }
-  }
-
-  async sendEmail(to: string, subject: string, content: string): Promise<void> {
-    const message = {
-      message: {
-        subject: subject,
-        body: {
-          contentType: "Text",
-          content: content,
-        },
-        toRecipients: [
-          {
-            emailAddress: {
-              address: to,
-            },
-          },
-        ],
-      },
-    };
-
-    try {
-      const response = await fetch("https://graph.microsoft.com/v1.0/me/sendMail", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${this.accessToken}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(message),
-      });
-
-      if (!response.ok) {
-        throw new Error(`Error: ${response.status}`);
-      }
-
-      console.log("Email sent successfully");
-    } catch (error) {
-      console.error("Failed to send email:", error);
-      throw error;
-    }
-  }
-
-  // Implement the abstract _call method
-  async _call(action: string, params: SendEmailParams | ReadEmailParams): Promise<void> {
-    switch (action) {
-      case "sendEmail":
-        const { to, subject, content } = params as SendEmailParams;
-        await this.sendEmail(to, subject, content);
-        break;
-      case "readEmails":
-        await this.readEmails();
-        break;
-      default:
-        throw new Error(`Action ${action} is not supported`);
-    }
-  }
-  
-
-  // You can add more methods for other features like managing contacts, calendar, etc.
-
 }
 
-
-// import fetch from "node-fetch";
-
-// const accessToken = "YOUR_ACCESS_TOKEN";
-
-// const response = await fetch("https://graph.microsoft.com/v1.0/me/messages", {
-//     headers: {
-//         Authorization: `Bearer ${accessToken}`,
-//     },
-// });
-
-// const data = await response.json();
-
-// console.log(data);
