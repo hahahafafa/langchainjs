@@ -91,6 +91,7 @@ const entrypoints = {
   prompts: "prompts/index",
   "prompts/load": "prompts/load",
   // vectorstores
+  "vectorstores/clickhouse": "vectorstores/clickhouse",
   "vectorstores/analyticdb": "vectorstores/analyticdb",
   "vectorstores/base": "vectorstores/base",
   "vectorstores/cassandra": "vectorstores/cassandra",
@@ -120,6 +121,7 @@ const entrypoints = {
   "vectorstores/typeorm": "vectorstores/typeorm",
   "vectorstores/myscale": "vectorstores/myscale",
   "vectorstores/redis": "vectorstores/redis",
+  "vectorstores/rockset": "vectorstores/rockset",
   "vectorstores/typesense": "vectorstores/typesense",
   "vectorstores/singlestore": "vectorstores/singlestore",
   "vectorstores/tigris": "vectorstores/tigris",
@@ -179,6 +181,7 @@ const entrypoints = {
   "document_loaders/fs/unstructured": "document_loaders/fs/unstructured",
   "document_loaders/fs/openai_whisper_audio":
     "document_loaders/fs/openai_whisper_audio",
+  "document_loaders/fs/pptx": "document_loaders/fs/pptx",
   // document_transformers
   "document_transformers/html_to_text": "document_transformers/html_to_text",
   "document_transformers/mozilla_readability":
@@ -249,6 +252,7 @@ const entrypoints = {
   "retrievers/self_query/pinecone": "retrievers/self_query/pinecone",
   "retrievers/self_query/supabase": "retrievers/self_query/supabase",
   "retrievers/self_query/weaviate": "retrievers/self_query/weaviate",
+  "retrievers/self_query/vectara": "retrievers/self_query/vectara",
   "retrievers/vespa": "retrievers/vespa",
   // cache
   cache: "cache/index",
@@ -256,6 +260,7 @@ const entrypoints = {
   "cache/momento": "cache/momento",
   "cache/redis": "cache/redis",
   "cache/ioredis": "cache/ioredis",
+  "cache/file_system": "cache/file_system",
   "cache/upstash_redis": "cache/upstash_redis",
   // stores
   "stores/doc/in_memory": "stores/doc/in_memory",
@@ -295,6 +300,7 @@ const entrypoints = {
   // experimental
   "experimental/autogpt": "experimental/autogpt/index",
   "experimental/openai_assistant": "experimental/openai_assistant/index",
+  "experimental/openai_files": "experimental/openai_files/index",
   "experimental/babyagi": "experimental/babyagi/index",
   "experimental/generative_agents": "experimental/generative_agents/index",
   "experimental/plan_and_execute": "experimental/plan_and_execute/index",
@@ -310,9 +316,11 @@ const entrypoints = {
     "experimental/hubs/makersuite/googlemakersuitehub",
   "experimental/chains/violation_of_expectations":
     "experimental/chains/violation_of_expectations/index",
+  "experimental/tools/pyinterpreter": "experimental/tools/pyinterpreter",
   // evaluation
   evaluation: "evaluation/index",
   // runnables
+  "runnables": "runnables/index",
   "runnables/remote": "runnables/remote",
 };
 
@@ -370,6 +378,7 @@ const requiresOptionalDependency = [
   "prompts/load",
   "vectorstores/analyticdb",
   "vectorstores/cassandra",
+  "vectorstores/clickhouse",
   "vectorstores/chroma",
   "vectorstores/cloudflare_vectorize",
   "vectorstores/closevector/web",
@@ -394,6 +403,7 @@ const requiresOptionalDependency = [
   "vectorstores/myscale",
   "vectorstores/neo4j_vector",
   "vectorstores/redis",
+  "vectorstores/rockset",
   "vectorstores/singlestore",
   "vectorstores/typesense",
   "vectorstores/tigris",
@@ -435,6 +445,7 @@ const requiresOptionalDependency = [
   "document_loaders/fs/notion",
   "document_loaders/fs/unstructured",
   "document_loaders/fs/openai_whisper_audio",
+  "document_loaders/fs/pptx",
   "document_transformers/html_to_text",
   "document_transformers/mozilla_readability",
   "chat_models/bedrock",
@@ -457,6 +468,7 @@ const requiresOptionalDependency = [
   "retrievers/self_query/pinecone",
   "retrievers/self_query/supabase",
   "retrievers/self_query/weaviate",
+  "retrievers/self_query/vectara",
   "output_parsers/expression",
   "chains/query_constructor",
   "chains/query_constructor/ir",
@@ -464,6 +476,7 @@ const requiresOptionalDependency = [
   "cache/momento",
   "cache/redis",
   "cache/ioredis",
+  "cache/file_system",
   "cache/upstash_redis",
   "stores/doc/gcs",
   "stores/file/node",
@@ -491,6 +504,7 @@ const requiresOptionalDependency = [
   "experimental/chat_models/anthropic_functions",
   "experimental/llms/bittensor",
   "experimental/hubs/makersuite/googlemakersuitehub",
+  "experimental/tools/pyinterpreter",
   "util/convex",
 ];
 
@@ -548,7 +562,7 @@ const updateConfig = () => {
     ...json,
     entryPoints: [...Object.keys(entrypoints)]
       .filter((key) => !deprecatedNodeOnly.includes(key))
-      .map((key) => `../../langchain/src/${entrypoints[key]}.ts`),
+      .map((key) => `./langchain/src/${entrypoints[key]}.ts`),
   }));
 
   const generatedFiles = generateFiles();
